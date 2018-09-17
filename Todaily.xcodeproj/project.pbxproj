@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		177FF18F214FD9F8008AA07C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177FF18E214FD9F8008AA07C /* AppDelegate.swift */; };
-		177FF191214FD9F8008AA07C /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177FF190214FD9F8008AA07C /* ViewController.swift */; };
+		177FF191214FD9F8008AA07C /* TableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177FF190214FD9F8008AA07C /* TableViewController.swift */; };
 		177FF194214FD9F8008AA07C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 177FF192214FD9F8008AA07C /* Main.storyboard */; };
 		177FF196214FD9FA008AA07C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 177FF195214FD9FA008AA07C /* Assets.xcassets */; };
 		177FF199214FD9FA008AA07C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 177FF197214FD9FA008AA07C /* LaunchScreen.storyboard */; };
@@ -17,7 +17,7 @@
 /* Begin PBXFileReference section */
 		177FF18B214FD9F8008AA07C /* Todaily.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Todaily.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		177FF18E214FD9F8008AA07C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		177FF190214FD9F8008AA07C /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		177FF190214FD9F8008AA07C /* TableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewController.swift; sourceTree = "<group>"; };
 		177FF193214FD9F8008AA07C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		177FF195214FD9FA008AA07C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		177FF198214FD9FA008AA07C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -55,7 +55,7 @@
 			isa = PBXGroup;
 			children = (
 				177FF18E214FD9F8008AA07C /* AppDelegate.swift */,
-				177FF190214FD9F8008AA07C /* ViewController.swift */,
+				177FF190214FD9F8008AA07C /* TableViewController.swift */,
 				177FF192214FD9F8008AA07C /* Main.storyboard */,
 				177FF195214FD9FA008AA07C /* Assets.xcassets */,
 				177FF197214FD9FA008AA07C /* LaunchScreen.storyboard */,
@@ -135,7 +135,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				177FF191214FD9F8008AA07C /* ViewController.swift in Sources */,
+				177FF191214FD9F8008AA07C /* TableViewController.swift in Sources */,
 				177FF18F214FD9F8008AA07C /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -283,6 +283,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5T3TH86F38;
 				INFOPLIST_FILE = Todaily/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -290,7 +291,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.tayyabejaz.Todaily;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -301,6 +302,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5T3TH86F38;
 				INFOPLIST_FILE = Todaily/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -308,7 +310,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.tayyabejaz.Todaily;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
