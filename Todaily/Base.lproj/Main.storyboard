@@ -32,7 +32,14 @@
                             <outlet property="delegate" destination="TiO-0t-MAb" id="R98-1U-2cL"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="ToDaily" id="iyE-UO-y4f"/>
+                    <navigationItem key="navigationItem" title="ToDaily" id="iyE-UO-y4f">
+                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="YYC-iT-DGj">
+                            <color key="tintColor" red="0.99999600649999998" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <connections>
+                                <action selector="addButtonPressed:" destination="TiO-0t-MAb" id="ki8-i9-Bly"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="e8J-cC-eye" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

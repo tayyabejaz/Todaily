@@ -9,9 +9,20 @@
 import UIKit
 
 class TableViewController: UITableViewController{
-    let itemArray = ["Find Mike", "Buy Something", "Attend the Meeting"]
+    
+    //Item Array
+    var itemArray = [""]
+    
+    //User Default Data
+    let defaults = UserDefaults.standard
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        if let items = defaults.array(forKey: "ToDoArrayList") as? [String]
+        {
+            itemArray = items
+        }
         
     }
     
@@ -44,6 +55,32 @@ class TableViewController: UITableViewController{
         
         tableView.deselectRow(at: indexPath, animated: true)
         
+    }
+    
+    //MARK - Add New Item Section
+    
+    @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
+        
+        var textField = UITextField()
+        
+        let alert = UIAlertController(title: "New ToDo Alert", message: "", preferredStyle: .alert)
+        
+        let action = UIAlertAction(title: "Add Item", style: .default) {
+            (action) in
+            self.itemArray.append(textField.text!)
+            self.defaults.set(self.itemArray, forKey: "ToDoArrayList")
+            self.tableView.reloadData()
+            
+        }
+        
+        alert.addTextField { (alertTextField) in
+            
+            alertTextField.placeholder = "Create New Item"
+            textField = alertTextField
+            
+        }
+        alert.addAction(action)
+        present(alert,animated: true, completion: nil)
     }
 }
 
