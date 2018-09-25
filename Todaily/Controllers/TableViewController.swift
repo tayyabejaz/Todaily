@@ -7,21 +7,31 @@
 //
 
 import UIKit
+import CoreData
 
-class TableViewController: UITableViewController{
+class TableViewController: UITableViewController {
     
     //Item Array
     var itemArray = [Item]()
     
-    //User Default Data
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    var selectedCategory : Category?
+    {
+        didSet
+        {
+            loadData()
+        }
+    }
     
+    //User Default Data
+    //let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        //print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         //print(dataFilePath!)
-        loadData()
         
     }
     
@@ -73,8 +83,10 @@ class TableViewController: UITableViewController{
         let action = UIAlertAction(title: "Add Item", style: .default) {
             (action) in
             
-            let newitem = Item()
+            let newitem = Item(context: self.context)
             newitem.title = textField.text!
+            newitem.done = false
+            newitem.parentCategory = self.selectedCategory
             self.itemArray.append(newitem)
             self.saveItems()
         }
@@ -90,40 +102,82 @@ class TableViewController: UITableViewController{
     }
     
     //MARK: Data Manipulation Method
-    
-    //Encoding the data and write it to New Plist
+    //Using a CoreData Methods
     func saveItems()
     {
-        let encoder = PropertyListEncoder()
-        
         do{
-            let data = try encoder.encode(itemArray)
-            try data.write(to: dataFilePath!)
+           try context.save()
         }
         catch
         {
-            print("Error in encoding Item Array, \(error)")
-            
+            print("ERROR SAVING CONTEXT \(error)")
         }
         self.tableView.reloadData()
     }
     
     //Decoding the data from Plist to show on the array
-    func loadData()
+    func loadData(with request : NSFetchRequest<Item> = Item.fetchRequest() , predicate: NSPredicate? = nil)
     {
+        //Older method using Plist and Decode and Encode Methods
+//            if let data = try? Data(contentsOf: dataFilePath!)
+//            {
+//                do{
+//                    let decoder = PropertyListDecoder()
+//                    itemArray = try  decoder.decode([Item].self , from: data)
+//
+//                }
+//                catch
+//                {
+//                    print("Error in Decoding data \(error)")
+//                }
+//                }
         
-            if let data = try? Data(contentsOf: dataFilePath!)
-            {
-                do{
-                    let decoder = PropertyListDecoder()
-                    itemArray = try  decoder.decode([Item].self , from: data)
-                    
-                }
-                catch
-                {
-                    print("Error in Decoding data \(error)")
-                }
-                }
+        // New Method using Database and CRUD
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        let categoryPredicate = NSCompoundPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
+        
+        if let additionalPredicate = predicate
+        {
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate,additionalPredicate])
+        }
+        else
+        {
+            request.predicate = categoryPredicate
+        }
+        
+        do{
+            itemArray = try context.fetch(request)
+        }
+        catch
+        {
+            print("Error in fetching the Error. \(error)")
+        }
+        
         }
 }
 
+extension TableViewController : UISearchBarDelegate
+{
+    //Adding a Search Bar Delegatge Method
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar)
+    {
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        
+        let predicate  = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        
+        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+       
+        loadData(with: request, predicate: predicate)
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text?.count == 0
+        {
+            loadData()
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+            }
+            
+        }
+    }
+}
