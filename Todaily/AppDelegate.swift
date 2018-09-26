@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import CoreData
 import RealmSwift
 
 @UIApplicationMain
@@ -22,7 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         print(Realm.Configuration.defaultConfiguration.fileURL!)
         
         do {
-            let realm = try Realm()
+            _ = try Realm()
         }
         catch
         {
@@ -30,9 +29,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         return true
     }
-
-    
-   
     
 }
 

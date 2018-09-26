@@ -8,13 +8,11 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
-class TableViewController: UITableViewController {
+class TableViewController: SwipeCellViewController{
     
-    //Getting a Current Date
-    let date = Date()
-    
-    
+    @IBOutlet weak var searchBar: UISearchBar!
     //Creating a New Realm
     let realm = try! Realm()
     
@@ -27,14 +25,34 @@ class TableViewController: UITableViewController {
         {
             loadData()
         }
+    
+    }
+
+    override func viewDidLoad()
+    {
+        super.viewDidLoad()
+        
     }
     
+    override func viewWillAppear(_ animated: Bool)
+    {
+        guard let colourHEX = selectedCategory?.color else{fatalError("Selected Category COlor Property Not Found")}
+        updateNavBar(withHexCode: colourHEX)
+    }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        updateNavBar(withHexCode: "1FB6DE")
+    }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-       print(date)
-        
+    //MARK:- Updating the Navbar
+    func updateNavBar(withHexCode ColorHex : String) {
+        guard let navbar = navigationController?.navigationBar else {fatalError("Navigation COntroller Doesn't Exists")}
+        guard let navbarColor = UIColor(hexString: ColorHex) else{fatalError("Error in Getting a Navbar Colour")}
+        navbar.barTintColor = navbarColor
+        navbar.tintColor = ContrastColorOf(navbarColor, returnFlat: true)
+        navbar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: ContrastColorOf(navbarColor, returnFlat: true)]
+        searchBar.barTintColor = navbarColor
+        title = selectedCategory!.name
     }
     
     //MARK - TableView DataSource Methods
@@ -46,10 +64,16 @@ class TableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
     {
         //let cell = UITableViewCell(style: .default, reuseIdentifier: "ToDoItemCell")
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         if let item = itemArray?[indexPath.row] {
             cell.textLabel?.text = item.title
+            
+            if let color = UIColor(hexString: selectedCategory!.color)?.darken(byPercentage: CGFloat(indexPath.row) / (CGFloat)(itemArray!.count))
+            {
+                cell.backgroundColor = color
+                cell.textLabel?.textColor = ContrastColorOf(color, returnFlat: true)
+            }
             
             //Using a Ternary Operator
             // value = condition ? valueIfTrue : ValueIfFalse
@@ -59,12 +83,8 @@ class TableViewController: UITableViewController {
             cell.textLabel?.text = "No Item Added"
         }
         
-        
-        
         return cell
     }
-    
-    
     
     //MARK - TableView Delegate Methods
     
@@ -109,7 +129,7 @@ class TableViewController: UITableViewController {
                     try self.realm.write {
                         let newitem = Item()
                         newitem.title = textField.text!
-                        newitem.createdDate = self.date
+                        newitem.createdDate = Date()
                         currentCategory.items.append(newitem)                }
                 }
                 catch
@@ -133,12 +153,26 @@ class TableViewController: UITableViewController {
     
     //MARK: Data Manipulation Method
     //Using a Realm Data
-
-    
-    //Decoding the data from Plist to show on the array
     func loadData()
     {
         itemArray = selectedCategory?.items.sorted(byKeyPath: "title", ascending: true)
+    }
+    
+    override func updateDataModel(at indexPath: IndexPath)
+    {
+        if let deleteItem = self.itemArray?[indexPath.row]{
+            do{
+                try self.realm.write {
+                    self.realm.delete(deleteItem)
+                }
+            }
+            catch
+            {
+                print("Error in Deleting the Category \(error)")
+            }
+            
+        }
+        
     }
 }
 
