@@ -7,12 +7,19 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 class TableViewController: UITableViewController {
     
+    //Getting a Current Date
+    let date = Date()
+    
+    
+    //Creating a New Realm
+    let realm = try! Realm()
+    
     //Item Array
-    var itemArray = [Item]()
+    var itemArray: Results<Item>?
     
     var selectedCategory : Category?
     {
@@ -22,36 +29,37 @@ class TableViewController: UITableViewController {
         }
     }
     
-    //User Default Data
-    //let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
     
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        //print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
-        //print(dataFilePath!)
+       print(date)
         
     }
     
     //MARK - TableView DataSource Methods
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int
     {
-        return itemArray.count
+        return itemArray?.count ?? 1
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
     {
         //let cell = UITableViewCell(style: .default, reuseIdentifier: "ToDoItemCell")
         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
-        let item = itemArray[indexPath.row]
         
-        cell.textLabel?.text = item.title
+        if let item = itemArray?[indexPath.row] {
+            cell.textLabel?.text = item.title
+            
+            //Using a Ternary Operator
+            // value = condition ? valueIfTrue : ValueIfFalse
+            cell.accessoryType = item.done == true ? .checkmark : .none
+        }else
+        {
+            cell.textLabel?.text = "No Item Added"
+        }
         
-        //Using a Ternary Operator
-        // value = condition ? valueIfTrue : ValueIfFalse
-        cell.accessoryType = item.done == true ? .checkmark : .none
+        
         
         return cell
     }
@@ -60,14 +68,27 @@ class TableViewController: UITableViewController {
     
     //MARK - TableView Delegate Methods
     
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath)
+    {
+        if let item = itemArray?[indexPath.row]
+        {
+            do
+            {
+                try realm.write {
+                    item.done = !item.done
+                }
+            }
+            catch
+            {
+                print("Error in toggling the Checkmark \(error)")
+            }
+        }
         
         //Toggle the Checkmark Sign
         
-        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+        //itemArray?[indexPath.row].done = !itemArray[indexPath.row].done
         
-        saveItems()
-        
+        tableView.reloadData()
         tableView.deselectRow(at: indexPath, animated: true)
         
     }
@@ -75,85 +96,50 @@ class TableViewController: UITableViewController {
     //MARK - Add New Item Section
     
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
-        
+
         var textField = UITextField()
-        
-        let alert = UIAlertController(title: "New ToDo Alert", message: "", preferredStyle: .alert)
-        
+
+        let alert = UIAlertController(title: "New Item", message: "", preferredStyle: .alert)
+
         let action = UIAlertAction(title: "Add Item", style: .default) {
             (action) in
-            
-            let newitem = Item(context: self.context)
-            newitem.title = textField.text!
-            newitem.done = false
-            newitem.parentCategory = self.selectedCategory
-            self.itemArray.append(newitem)
-            self.saveItems()
+            if let currentCategory = self.selectedCategory
+            {
+                do{
+                    try self.realm.write {
+                        let newitem = Item()
+                        newitem.title = textField.text!
+                        newitem.createdDate = self.date
+                        currentCategory.items.append(newitem)                }
+                }
+                catch
+                {
+                    print("Error in Creating a Newitem in Realm \(error)")
+                }
+                
+            }
+            self.tableView.reloadData()
         }
-        
+
         alert.addTextField { (alertTextField) in
-            
+
             alertTextField.placeholder = "Create New Item"
             textField = alertTextField
-            
+
         }
         alert.addAction(action)
         present(alert,animated: true, completion: nil)
     }
     
     //MARK: Data Manipulation Method
-    //Using a CoreData Methods
-    func saveItems()
-    {
-        do{
-           try context.save()
-        }
-        catch
-        {
-            print("ERROR SAVING CONTEXT \(error)")
-        }
-        self.tableView.reloadData()
-    }
+    //Using a Realm Data
+
     
     //Decoding the data from Plist to show on the array
-    func loadData(with request : NSFetchRequest<Item> = Item.fetchRequest() , predicate: NSPredicate? = nil)
+    func loadData()
     {
-        //Older method using Plist and Decode and Encode Methods
-//            if let data = try? Data(contentsOf: dataFilePath!)
-//            {
-//                do{
-//                    let decoder = PropertyListDecoder()
-//                    itemArray = try  decoder.decode([Item].self , from: data)
-//
-//                }
-//                catch
-//                {
-//                    print("Error in Decoding data \(error)")
-//                }
-//                }
-        
-        // New Method using Database and CRUD
-        let request : NSFetchRequest<Item> = Item.fetchRequest()
-        let categoryPredicate = NSCompoundPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
-        
-        if let additionalPredicate = predicate
-        {
-            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate,additionalPredicate])
-        }
-        else
-        {
-            request.predicate = categoryPredicate
-        }
-        
-        do{
-            itemArray = try context.fetch(request)
-        }
-        catch
-        {
-            print("Error in fetching the Error. \(error)")
-        }
-        
-        }
+        itemArray = selectedCategory?.items.sorted(byKeyPath: "title", ascending: true)
+    }
 }
 
 extension TableViewController : UISearchBarDelegate
@@ -161,13 +147,8 @@ extension TableViewController : UISearchBarDelegate
     //Adding a Search Bar Delegatge Method
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar)
     {
-        let request : NSFetchRequest<Item> = Item.fetchRequest()
-        
-        let predicate  = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
-        
-        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
-       
-        loadData(with: request, predicate: predicate)
+        itemArray = itemArray?.filter("title CONTAINS[cd] %@", searchBar.text!).sorted(byKeyPath: "createdDate", ascending: true)
+        tableView.reloadData()
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
